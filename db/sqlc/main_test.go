@@ -24,6 +24,6 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot connect to db:", err)
 	}
 
-	testQueries = New(testDB) // use connection cnn to create the Queries object;
+	testQueries = New(testDB) // use connection testDB to create the Queries object;
 	os.Exit(m.Run())
 }
