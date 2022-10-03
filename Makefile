@@ -1,25 +1,25 @@
 postgres:
-    docker run --name new-postgres -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
+	docker run --name new-postgres -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:12-alpine
 
 createdb:
-    docker exec -it new-postgres createdb --username=root --owner=root simple_bank
+	docker exec -it new-postgres createdb --username=root --owner=root simple_bank
 
 dropdb:
-    docker exec -it new-postgres dropdb simple_bank
+	docker exec -it new-postgres dropdb simple_bank
 
 migrateup:
-    migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose up
 
 migratedown:
-    migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable" -verbose down
 
 sqlc:
-    sqlc generate
+	sqlc generate
 
 test:
-    go test -v -cover ./...
+	go test -v -cover ./...
 
 server:
-    go run main.go	
+	go run main.go	
 
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc test server
