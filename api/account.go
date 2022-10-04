@@ -52,7 +52,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 }
 
 type getAccountRequest struct {
-	// use the uri tag to tell Gin the name of the URI paramete
+	// use the uri tag to tell Gin the name of the URI parameter
 	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
