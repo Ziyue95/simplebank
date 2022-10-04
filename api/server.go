@@ -21,6 +21,8 @@ func NewServer(store *db.Store) *Server {
 	router.POST("/accounts", server.createAccount)
 	// add a : before id to tell Gin that id is a URI parameter
 	router.GET("/accounts/:id", server.getAccount)
+	// to get list of accounts, obtain page_id & page_size from query
+	router.GET("/accounts", server.listAccount)
 
 	server.router = router
 	return server
