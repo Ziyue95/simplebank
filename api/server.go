@@ -17,12 +17,16 @@ func NewServer(store db.Store) *Server {
 	server := &Server{store: store}
 	router := gin.Default()
 
+	// Server API for Account:
 	// add routes to router
 	router.POST("/accounts", server.createAccount)
 	// add a : before id to tell Gin that id is a URI parameter
 	router.GET("/accounts/:id", server.getAccount)
 	// to get list of accounts, obtain page_id & page_size from query
 	router.GET("/accounts", server.listAccount)
+
+	// Server API for transfer:
+	router.POST("/transfers", server.createTransfer)
 
 	server.router = router
 	return server
