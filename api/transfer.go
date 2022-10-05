@@ -15,7 +15,7 @@ type transferRequest struct {
 	ToAccountID   int64 `json:"to_account_id" binding:"required,min=1"`
 	// gt=0: require Amount to be greater than 0
 	Amount   int64  `json:"amount" binding:"required,gt=0"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR CAD"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 // validAccount checks if an account with a specific ID really exists, and its currency matches the input currency
