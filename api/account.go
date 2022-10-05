@@ -16,7 +16,7 @@ type createAccountRequest struct {
 	// and Gin will validate the output object to make sure it satisfy the conditions we specified in the binding tag.
 	Owner string `json:"owner" binding:"required"`
 	// use the oneof condition to declare bank only supports 2 types of currency for now: USD and EUR
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Currency string `json:"currency" binding:"required,oneof=USD EUR CAD"`
 }
 
 // declare a function createAccount with a server pointer receiver
