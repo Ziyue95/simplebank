@@ -2,17 +2,7 @@ package token
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
-
-// Payload struct: contain the payload data of the token
-type Payload struct {
-	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
-	IssuedAt  time.Time `json:"issued_at"`
-	ExpiredAt time.Time `json:"expired_at"`
-}
 
 // Maker interface: manage the creation and verification of the tokens
 type Maker interface {
