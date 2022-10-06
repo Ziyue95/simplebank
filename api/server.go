@@ -23,6 +23,7 @@ type Server struct {
 // NewServer creates a new Server instance, and setup all HTTP API routes for our service on that server.
 func NewServer(config util.Config, store db.Store) (*Server, error) {
 	// initialize a tokenMaker with symmetric key defined in config
+	// Can CHANGE NewPasetoMaker to NewJWTMaker
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
