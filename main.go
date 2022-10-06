@@ -25,7 +25,10 @@ func main() {
 	// create store object to support db operation using connect conn
 	store := db.NewStore(conn)
 	// create server object
-	server := api.NewServer(store)
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
 
 	err = server.Start(config.ServerAddress)
 	if err != nil {

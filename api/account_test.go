@@ -17,10 +17,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func randomAccount() db.Account {
+func randomAccount(owner string) db.Account {
 	return db.Account{
 		ID:       util.RandomInt(1, 1000),
-		Owner:    util.RandomOwner(),
+		Owner:    owner,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
@@ -43,7 +43,8 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 
 // TestGetAccount cover 100% code of getAccount method in ./api/account.go file
 func TestGetAccountAPI(t *testing.T) {
-	account := randomAccount()
+	user, _ := randomUser(t)
+	account := randomAccount(user.Username)
 
 	// use an anonymous class to store the test data
 	testCases := []struct {
@@ -134,7 +135,7 @@ func TestGetAccountAPI(t *testing.T) {
 			tc.buildStubs(store)
 
 			// Test HTTP server and send GetAccount request using built stub
-			server := NewServer(store)
+			server := newTestServer(t, store)
 			// use the recording feature of the httptest package to record the response of the API request
 			recorder := httptest.NewRecorder()
 			// declare the url path of the API to call
