@@ -42,7 +42,7 @@ func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, account db.Accoun
 }
 
 // TestGetAccount cover 100% code of getAccount method in ./api/account.go file
-func TestGetAccount(t *testing.T) {
+func TestGetAccountAPI(t *testing.T) {
 	account := randomAccount()
 
 	// use an anonymous class to store the test data
