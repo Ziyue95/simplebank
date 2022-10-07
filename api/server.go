@@ -51,16 +51,20 @@ func (server *Server) setupRouter() {
 	router.POST("/users", server.createUser)
 	router.POST("/users/login", server.loginUser)
 
+	// PROTECT all other APIs by the authorization middleware
+	// create a group of routes using router.Group with path prefix "/" and add the authMiddleware using .Use()
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+
 	// Server API for Account:
 	// add routes to router
-	router.POST("/accounts", server.createAccount)
+	authRoutes.POST("/accounts", server.createAccount)
 	// add a : before id to tell Gin that id is a URI parameter
-	router.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts/:id", server.getAccount)
 	// to get list of accounts, obtain page_id & page_size from query
-	router.GET("/accounts", server.listAccount)
+	authRoutes.GET("/accounts", server.listAccount)
 
 	// Server API for transfer:
-	router.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/transfers", server.createTransfer)
 
 	server.router = router
 }

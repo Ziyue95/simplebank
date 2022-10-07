@@ -2,10 +2,12 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 
 	db "db.sqlc.dev/app/db/sqlc"
+	"db.sqlc.dev/app/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,27 +21,28 @@ type transferRequest struct {
 }
 
 // validAccount checks if an account with a specific ID really exists, and its currency matches the input currency
-func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) bool {
+func (server *Server) validAccount(ctx *gin.Context, accountID int64, currency string) (db.Account, bool) {
 	account, err := server.store.GetAccount(ctx, accountID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account, false
 		}
 
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account, false
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return false
+		return account, false
 	}
 
-	return true
+	return account, true
 }
 
+// Handler function
 func (server *Server) createTransfer(ctx *gin.Context) {
 	var req transferRequest
 	// STEP 1.: check if input data is in valid format;
@@ -51,12 +54,23 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	// STEP 2.: check if accounts exist and match the currency
-	if !server.validAccount(ctx, req.FromAccountID, req.Currency) {
+	fromAccount, valid := server.validAccount(ctx, req.FromAccountID, req.Currency)
+
+	// STEP 2.: check if accounts exist and match the currency,
+	// also check if account owner stored in payload is the owner of fromAccount
+	if !valid {
 		return
 	}
 
-	if !server.validAccount(ctx, req.ToAccountID, req.Currency) {
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if fromAccount.Owner != authPayload.Username {
+		err := errors.New("From account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err)) // call ctx.JSON() function to send a JSON response
+		return
+	}
+
+	_, valid = server.validAccount(ctx, req.ToAccountID, req.Currency)
+	if !valid {
 		return
 	}
 

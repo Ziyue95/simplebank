@@ -2,9 +2,11 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 
 	db "db.sqlc.dev/app/db/sqlc"
+	"db.sqlc.dev/app/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 )
@@ -15,7 +17,8 @@ type createAccountRequest struct {
 	// Use a binding tag to tell Gin that the field is required,
 	// Later call ShouldBindJSON function to parse the input data from HTTP request body,
 	// and Gin will validate the output object to make sure it satisfy the conditions we specified in the binding tag.
-	Owner string `json:"owner" binding:"required"`
+	// Owner string `json:"owner" binding:"required"`
+
 	// use the oneof condition to declare bank only supports 2 types of currency for now: USD and EUR
 	// substitue oneof condition by custom currency validator
 	Currency string `json:"currency" binding:"required,currency"`
@@ -34,9 +37,13 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	// Owner should be the username of the logged in user stored in the authorization payload:
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	// STEP 2.: insert the new account into the database;
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		// API RULE: A logged-in user can only create an accounr for him/herself
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -83,6 +90,15 @@ func (server *Server) getAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
+	// API RULE: A logged-in user can only get accounts that he/she owns
+	if account.Owner != authPayload.Username {
+		err := errors.New("account does not belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, account)
 }
 
@@ -99,7 +115,11 @@ func (server *Server) listAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	arg := db.ListAccountsParams{
+		// API RULE: A logged-in user can only list accounts that he/she owns
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}
