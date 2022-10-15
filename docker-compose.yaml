@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_USER=root 
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=simple_bank
+    # declare api servicce: serve all API requests to simplebank
+  api:
+    # build its image from golang source
+    build: 
+      # context: . means root of the project
+      context: .
+      # use dockerfile keyword to tell docker compose to find the dockerfile to build the image
+      dockerfile: Dockerfile
+    # publish port 8080 to the host machine
+    ports:
+      - "8080:8080"
+    # tell api service how to connect the the postgres service
+    environment:
+      # declare DB_SOURCE here will overwrite one in the app.env
+      # all services in the same network so use service name to connect each other
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/simple_bank?sslmode=disable
+    # tell docker compose that the api service depends on the postgres service, but the api service will NOT wait until postgres is ready
+    depends_on:
+      - postgres
+    # overwrite the default entry point and command to wait for the postgres service to be ready 
+    # entrypoint: [wait-for executable file, host&port to wait for, "--", script to run after the wait-for service is ready]
+    entrypoint: ["/app/wait-for.sh", "postgres:5432", "--", "/app/start.sh"]
+    command: ["/app/main"]
