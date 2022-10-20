@@ -1,0 +1,45 @@
+###################################################
+#   Setup routing for all simple bank services    #
+###################################################
+
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: nginx
+spec:
+  controller: k8s.io/ingress-nginx
+---
+# version of kubernetes API
+apiVersion: networking.k8s.io/v1
+# kind of object to create
+kind: Ingress
+metadata:
+  name: simple-bank-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: nginx 
+  # define as many as routing rules as we want to route traffics to different services
+  rules:
+  # Rule for simple bank API service
+  # host: url is simple bank API record
+  - host: "api.bostonguavanail.com"
+    http:
+      # specify which HTTP path will satisfy the rule
+      paths:
+      - pathType: Prefix
+        # Accept all requests sending to the host
+        path: "/"
+        # tell ingress where to route the service to
+        backend:
+          service:
+            # simple-bank-api-service: service name defined in service.yaml
+            name: simple-bank-api-service
+            port:
+              # conform with the port of simple-bank-api-service
+              number: 80
+  # add a section for TLS
+  tls:
+  - hosts:
+    - api.bostonguavanail.com
+    secretName: simple-bank-api-cert

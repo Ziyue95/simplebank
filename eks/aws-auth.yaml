@@ -1,0 +1,12 @@
+# add github-ci user to the map users section 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aws-auth
+  namespace: kube-system
+data:
+  mapUsers: |
+    - userarn: arn:aws:iam::707006578298:user/github-ci
+      username: github-ci
+      groups:
+        - system:masters

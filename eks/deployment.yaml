@@ -1,0 +1,37 @@
+###################################################
+# Deployment object to deploy Simple bank service #
+###################################################
+
+# version of kubernetes API
+apiVersion: apps/v1
+# kind of object to create
+kind: Deployment
+metadata:
+  # name of the object
+  name: simple-bank-api-deployment
+  # key-value pairs attached to the object
+  labels:
+    app: simple-bank-api
+# main specification of deployment object
+spec:
+  # number of pods to run the same template
+  replicas: 2
+  # pod selector: rule that defines how the deployment can find which pods to manage
+  selector:
+    # matchLabels rule: use the same label app: simple-bank-api <- all pods with this label will be managed by this deployment
+    matchLabels:
+      app: simple-bank-api
+  template:
+    metadata:
+      labels:
+        app: simple-bank-api
+    # spec of pod: where we tell the deployment how to deploy containers
+    spec:
+      containers:
+      # name of container
+      - name: simple-bank-api
+        # URL to pull the image from
+        image: 707006578298.dkr.ecr.us-east-2.amazonaws.com/simplebank:latest
+        # port that the container will expose to the network
+        ports:
+        - containerPort: 8080

@@ -1,0 +1,27 @@
+###################################################
+# Service object to route traffic outside cluster #
+###################################################
+
+# version of kubernetes API
+apiVersion: v1
+# kind of object to create
+kind: Service
+metadata:
+  # name of the object
+  name: simple-bank-api-service
+# main specification of service object
+spec:
+  # define pod selector rule so that the service can find the set of pods to route the traffic to
+  selector:
+    app: simple-bank-api 
+  # define rules for ports
+  ports:
+    # service will listen to HTTP API requests -> protocol should be TCP
+    - protocol: TCP
+      # port where the service will listen to incoming requests
+      port: 80
+      # port of the container where the request will be sent to
+      # container port is 8080 <- specified in the deployment.yaml
+      targetPort: 8080
+  # change the type from ClusterIP(default, w/out external IP) to LoadBalancer(w/ external IP)
+  type: ClusterIP

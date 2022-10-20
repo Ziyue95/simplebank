@@ -9,7 +9,7 @@ on:
 jobs:
   
   # declare to build and push docker image to amazon ECR
-  build:
+  deploy:
     name: Build image
     runs-on: ubuntu-latest
 
@@ -17,6 +17,12 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v3
+
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.25.3' # default is latest stable
+      id: install
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -42,5 +48,17 @@ jobs:
         IMAGE_TAG: ${{ github.sha }}
       # build the image locally and push the image to ECR
       run: |
-        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG . 
-        docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG -t latest . 
+        docker push -a $REGISTRY/$REPOSITORY
+
+    - name: Deploy image to Amazon EKS
+      # deploy multiple resources: 
+      # 1. user authorization(aws-auth.yaml); 
+      # 2. deployment resource: manage the deployment of our simple-bank API container(deployment.yaml);
+      # 3. ...
+      run: |
+        kubectl apply -f eks/aws-auth.yaml
+        kubectl apply -f eks/deployment.yaml
+        kubectl apply -f eks/service.yaml
+        kubectl apply -f eks/issuer.yaml
+        kubectl apply -f eks/ingress.yaml
